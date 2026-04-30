@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.CommentMapper">
+    <resultMap id="CommentResult" type="com.bloger.backend.entity.Comment">
+        <id column="id" property="id"/>
+        <result column="article_id" property="articleId"/>
+        <result column="content" property="content"/>
+        <result column="author_name" property="authorName"/>
+        <result column="author_email" property="authorEmail"/>
+        <result column="author_website" property="authorWebsite"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="CommentResult">
+        SELECT * FROM comment WHERE id = #{id}
+    </select>
+
+    <select id="selectByArticleId" resultMap="CommentResult">
+        SELECT * FROM comment WHERE article_id = #{articleId} AND status = 1 ORDER BY create_time ASC
+    </select>
+
+    <select id="selectList" resultMap="CommentResult">
+        SELECT * FROM comment ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.bloger.backend.entity.Comment">
+        INSERT INTO comment (article_id, content, author_name, author_email, author_website, parent_id, status, create_time, update_time)
+        VALUES (#{articleId}, #{content}, #{authorName}, #{authorEmail}, #{authorWebsite}, #{parentId}, #{status}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.bloger.backend.entity.Comment">
+        UPDATE comment
+        SET content = #{content}, author_name = #{authorName}, author_email = #{authorEmail},
+            author_website = #{authorWebsite}, parent_id = #{parentId}, status = #{status}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM comment
+    </select>
+</mapper>

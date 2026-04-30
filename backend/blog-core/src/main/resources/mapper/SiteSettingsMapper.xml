@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.SiteSettingsMapper">
+    <select id="selectByKey" parameterType="java.lang.String" resultType="com.bloger.backend.entity.SiteSettings">
+        SELECT * FROM site_settings WHERE `key` = #{key}
+    </select>
+    
+    <insert id="insert" parameterType="com.bloger.backend.entity.SiteSettings">
+        INSERT INTO site_settings (`key`, `value`, create_time, update_time)
+        VALUES (#{key}, #{value}, NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="com.bloger.backend.entity.SiteSettings">
+        UPDATE site_settings
+        SET `value` = #{value}, update_time = NOW()
+        WHERE `key` = #{key}
+    </update>
+</mapper>

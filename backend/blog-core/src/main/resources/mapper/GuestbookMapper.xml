@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.GuestbookMapper">
+    <resultMap id="GuestbookResult" type="com.bloger.backend.entity.Guestbook">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <result column="author_name" property="authorName"/>
+        <result column="author_email" property="authorEmail"/>
+        <result column="author_avatar" property="authorAvatar"/>
+        <result column="reply" property="reply"/>
+        <result column="reply_time" property="replyTime"/>
+        <result column="status" property="status"/>
+        <result column="sort" property="sort"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="GuestbookResult">
+        SELECT * FROM guestbook WHERE id = #{id}
+    </select>
+
+    <select id="selectList" resultMap="GuestbookResult">
+        SELECT * FROM guestbook WHERE status = 1 ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="GuestbookResult">
+        SELECT * FROM guestbook WHERE status = #{status} ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="GuestbookResult">
+        SELECT * FROM guestbook ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.bloger.backend.entity.Guestbook" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO guestbook (content, author_name, author_email, author_avatar, reply, reply_time, status, sort, create_time, update_time)
+        VALUES (#{content}, #{authorName}, #{authorEmail}, #{authorAvatar}, #{reply}, #{replyTime}, #{status}, #{sort}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.bloger.backend.entity.Guestbook">
+        UPDATE guestbook
+        SET content = #{content},
+            author_name = #{authorName},
+            author_email = #{authorEmail},
+            author_avatar = #{authorAvatar},
+            reply = #{reply},
+            reply_time = #{replyTime},
+            status = #{status},
+            sort = #{sort},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="reply">
+        UPDATE guestbook
+        SET reply = #{reply},
+            reply_time = NOW(),
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM guestbook WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM guestbook WHERE status = 1
+    </select>
+</mapper>

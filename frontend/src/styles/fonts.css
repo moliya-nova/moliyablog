@@ -1,0 +1,15 @@
+@font-face {
+  font-family: '字魂布丁体';
+  src: url('/fonts/zihun-budingti.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: '糖影黑';
+  src: url('/fonts/YeZiGongChangTangYingHei.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

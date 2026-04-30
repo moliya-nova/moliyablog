@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.AboutPageMapper">
+    <select id="selectById" parameterType="java.lang.Long" resultType="com.bloger.backend.entity.AboutPage">
+        SELECT * FROM about_page WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" parameterType="com.bloger.backend.entity.AboutPage">
+        INSERT INTO about_page (profile, stats, skills, contact, experience, create_time, update_time)
+        VALUES (#{profile}, #{stats}, #{skills}, #{contact}, #{experience}, NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="com.bloger.backend.entity.AboutPage">
+        UPDATE about_page
+        SET profile = #{profile}, stats = #{stats}, skills = #{skills}, contact = #{contact}, experience = #{experience}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>

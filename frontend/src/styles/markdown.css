@@ -1,0 +1,16 @@
+/* Markdown Syntax Highlighting - GitHub Light Theme (Typora-like) */
+@import 'highlight.js/styles/github.css';
+
+/* Additional markdown styles */
+.markdown-content {
+  line-height: 1.7;
+}
+
+.markdown-content pre {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.markdown-content code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}

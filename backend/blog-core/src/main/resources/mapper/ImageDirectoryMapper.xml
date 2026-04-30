@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.ImageDirectoryMapper">
+    <resultMap id="ImageDirectoryResult" type="com.bloger.backend.entity.ImageDirectory">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="path" property="path"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="image_count" property="imageCount"/>
+        <result column="sort" property="sort"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="ImageDirectoryResult">
+        SELECT * FROM image_directory WHERE id = #{id}
+    </select>
+
+    <select id="selectRootDirectories" resultMap="ImageDirectoryResult">
+        SELECT * FROM image_directory WHERE parent_id IS NULL ORDER BY sort ASC, id ASC
+    </select>
+
+    <select id="selectByParentId" resultMap="ImageDirectoryResult">
+        SELECT * FROM image_directory WHERE parent_id = #{parentId} ORDER BY sort ASC, id ASC
+    </select>
+
+    <select id="selectAll" resultMap="ImageDirectoryResult">
+        SELECT * FROM image_directory ORDER BY path ASC
+    </select>
+
+    <select id="selectByPath" resultMap="ImageDirectoryResult">
+        SELECT * FROM image_directory WHERE path = #{path}
+    </select>
+
+    <insert id="insert" parameterType="com.bloger.backend.entity.ImageDirectory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO image_directory (name, path, parent_id, image_count, sort, create_time, update_time)
+        VALUES (#{name}, #{path}, #{parentId}, #{imageCount}, #{sort}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.bloger.backend.entity.ImageDirectory">
+        UPDATE image_directory
+        SET name = #{name}, path = #{path}, parent_id = #{parentId}, sort = #{sort}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM image_directory WHERE id = #{id}
+    </delete>
+
+    <update id="incrementImageCount">
+        UPDATE image_directory SET image_count = image_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="decrementImageCount">
+        UPDATE image_directory SET image_count = GREATEST(image_count - 1, 0) WHERE id = #{id}
+    </update>
+</mapper>

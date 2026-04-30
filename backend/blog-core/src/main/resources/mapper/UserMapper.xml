@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.UserMapper">
+    <resultMap id="UserResult" type="com.bloger.backend.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="avatar" property="avatar"/>
+        <result column="status" property="status"/>
+        <result column="email_verified" property="emailVerified"/>
+        <result column="admin" property="admin"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="UserResult">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="UserResult">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+
+    <select id="selectByEmail" resultMap="UserResult">
+        SELECT * FROM user WHERE email = #{email}
+    </select>
+
+    <select id="selectList" resultMap="UserResult">
+        SELECT * FROM user
+    </select>
+
+    <insert id="insert" parameterType="com.bloger.backend.entity.User">
+        INSERT INTO user (username, password, email, avatar, status, email_verified, admin, last_login_time, create_time, update_time)
+        VALUES (#{username}, #{password}, #{email}, #{avatar}, #{status}, #{emailVerified}, #{admin}, #{lastLoginTime}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.bloger.backend.entity.User">
+        UPDATE user
+        SET username = #{username}, password = #{password}, email = #{email},
+            avatar = #{avatar}, status = #{status}, email_verified = #{emailVerified}, admin = #{admin}, last_login_time = #{lastLoginTime}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <select id="getRecentActivities" resultType="map">
+        SELECT 
+            username, 
+            last_login_time as lastLoginTime, 
+            create_time as createTime
+        FROM user
+        WHERE last_login_time IS NOT NULL OR create_time IS NOT NULL
+        ORDER BY GREATEST(COALESCE(last_login_time, '1970-01-01'), COALESCE(create_time, '1970-01-01')) DESC
+        LIMIT 10
+    </select>
+</mapper>

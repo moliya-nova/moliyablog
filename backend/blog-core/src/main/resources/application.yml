@@ -1,0 +1,39 @@
+# Environment Configuration
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: ${db.url}
+    username: ${db.username}
+    password: ${db.password}
+    driver-class-name: ${db.driver-class-name}
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+# COS Configuration
+cos:
+  secretId: ${cos.secretId}
+  secretKey: ${cos.secretKey}
+  bucketName: ${cos.bucketName}
+  region: ${cos.region}
+  baseUrl: ${cos.baseUrl}
+
+# Server Configuration
+server:
+  port: 8080
+
+# MyBatis Configuration
+mybatis:
+  type-aliases-package: com.bloger.backend.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+# Logging Configuration
+logging:
+  level:
+    com.bloger.backend: debug
+    org.springframework.jdbc: debug
+    org.mybatis: debug
