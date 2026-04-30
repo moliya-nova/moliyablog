@@ -14,6 +14,7 @@ dependencies = [
     "langchain-community>=0.4.1",
     "langchain-openai>=1.2.1",
     "langgraph>=1.1.9",
+    "langgraph-checkpoint-sqlite>=3.0.3",
     "loguru>=0.7.3",
     "pydantic>=2.13.3",
     "pymysql>=1.1.2",
