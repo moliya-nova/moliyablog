@@ -60,14 +60,14 @@ frontend/.cache/
 frontend/react-backup/
 
 # ------------------------------
-# Python - blog-ai-assistant
+# Python - blog-agent
 # ------------------------------
 # 虚拟环境目录
-blog-ai-assistant/.venv/
+blog-agent/.venv/
 
 # 环境变量 (包含 API Key 等敏感信息)
-blog-ai-assistant/.env
-blog-ai-assistant/.env.*.local
+blog-agent/.env
+blog-agent/.env.*.local
 
 # Python 字节码缓存
 __pycache__/
@@ -83,7 +83,8 @@ dist/
 build/
 
 # AI 助手运行时数据
-blog-ai-assistant/memory.db
+blog-agent/data/
+*.db
 
 # ------------------------------
 # IDE 开发工具配置 (全局忽略)
