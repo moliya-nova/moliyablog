@@ -38,7 +38,7 @@ public class UserController {
     public void update(@PathVariable Long id, @RequestBody User user) {
         imagePathValidator.validateAvatarPath(user.getAvatar());
         user.setId(id);
-        userService.update(user);
+        userService.updateSelective(user);
     }
 
     @DeleteMapping("/{id}")

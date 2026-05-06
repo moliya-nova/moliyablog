@@ -1,0 +1,376 @@
+/* ========================================
+   Knowledge Graph — Theme-Aware Styles
+   ======================================== */
+
+/* --- Sidebar override when graph is active --- */
+body[data-graph-theme] aside {
+  z-index: 9996 !important;
+}
+
+/* Light theme sidebar buttons — keep original white style */
+body[data-graph-theme="light"] aside a,
+body[data-graph-theme="light"] aside button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body[data-graph-theme="light"] aside a:hover,
+body[data-graph-theme="light"] aside button:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Active state — white bg, dark text */
+body[data-graph-theme="light"] aside a[href="/home/graph"] {
+  background: white !important;
+  color: #1f2937 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark theme sidebar buttons */
+body[data-graph-theme="dark"] aside a,
+body[data-graph-theme="dark"] aside button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body[data-graph-theme="dark"] aside a:hover,
+body[data-graph-theme="dark"] aside button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Active state — dark theme */
+body[data-graph-theme="dark"] aside a[href="/home/graph"] {
+  background: rgba(34, 211, 238, 0.12) !important;
+  color: #22d3ee !important;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.15);
+}
+
+/* --- Canvas --- */
+.graph-canvas canvas {
+  cursor: grab;
+}
+
+.graph-canvas canvas:active {
+  cursor: grabbing;
+}
+
+.graph-canvas[data-link-hover] canvas {
+  cursor: pointer;
+}
+
+/* --- Nav sidebar (inside graph) --- */
+.graph-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+/* Dark theme nav */
+.graph-nav-btn[data-theme="dark"] {
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.graph-nav-btn[data-theme="dark"]:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.graph-nav-btn[data-theme="dark"][data-active="true"] {
+  color: #0e7490;
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.08);
+}
+
+/* Light theme nav */
+.graph-nav-btn[data-theme="light"] {
+  color: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.graph-nav-btn[data-theme="light"]:hover {
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.graph-nav-btn[data-theme="light"][data-active="true"] {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.1);
+}
+
+/* --- Search input --- */
+.graph-search {
+  border: 1px solid transparent;
+}
+
+.graph-search:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+/* --- Toggle buttons --- */
+.graph-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.graph-toggle[data-theme="dark"] {
+  color: rgba(120, 120, 140, 0.7);
+}
+
+.graph-toggle[data-theme="dark"]:hover {
+  color: rgba(200, 200, 220, 0.8);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.graph-toggle[data-theme="light"] {
+  color: rgba(120, 120, 140, 0.7);
+}
+
+.graph-toggle[data-theme="light"]:hover {
+  color: rgba(80, 80, 100, 0.9);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.graph-toggle--active-violet {
+  color: rgb(167, 139, 250) !important;
+  background: rgba(167, 139, 250, 0.08) !important;
+  border-color: rgba(167, 139, 250, 0.15) !important;
+}
+
+.graph-toggle--active-amber {
+  color: rgb(245, 158, 11) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+/* --- Icon buttons --- */
+.graph-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(120, 120, 140, 0.5);
+}
+
+.graph-icon-btn:hover {
+  background: rgba(128, 128, 128, 0.08);
+  border-color: rgba(128, 128, 128, 0.08);
+  color: rgba(100, 100, 120, 0.9);
+}
+
+.graph-icon-btn--active {
+  color: rgb(59, 130, 246) !important;
+  background: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+/* --- Range sliders --- */
+.graph-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: rgba(128, 128, 128, 0.12);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.graph-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgb(59, 130, 246);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.graph-range::-webkit-slider-thumb:hover {
+  box-shadow: 0 1px 8px rgba(59, 130, 246, 0.35);
+}
+
+.graph-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgb(59, 130, 246);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* --- Clear highlight button --- */
+.graph-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.graph-clear-btn[data-theme="dark"] {
+  color: rgba(34, 211, 238, 0.7);
+  background: rgba(34, 211, 238, 0.06);
+  border: 1px solid rgba(34, 211, 238, 0.12);
+}
+
+.graph-clear-btn[data-theme="dark"]:hover {
+  color: rgba(34, 211, 238, 0.9);
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+.graph-clear-btn[data-theme="light"] {
+  color: rgba(59, 130, 246, 0.7);
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.12);
+}
+
+.graph-clear-btn[data-theme="light"]:hover {
+  color: rgba(59, 130, 246, 0.9);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* --- Tooltip --- */
+.graph-tooltip-enter {
+  animation: graphTooltipIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes graphTooltipIn {
+  from {
+    opacity: 0;
+    transform: translate(10px, -50%) scale(0.92);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%) scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* --- Nebula drift --- */
+@keyframes graphNebula {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1) translate(0, 0);
+  }
+  33% {
+    opacity: 1;
+    transform: scale(1.05) translate(10px, -8px);
+  }
+  66% {
+    opacity: 0.75;
+    transform: scale(0.97) translate(-8px, 6px);
+  }
+}
+
+/* --- Star twinkle --- */
+@keyframes graphStar {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 1; }
+}
+
+.graph-star {
+  position: absolute;
+  pointer-events: none;
+}
+
+.graph-star::before,
+.graph-star::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.graph-star::before {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(200, 225, 255, 0.05) 15%,
+    rgba(200, 225, 255, 0.6) 45%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(200, 225, 255, 0.6) 55%,
+    rgba(200, 225, 255, 0.05) 85%,
+    transparent 100%
+  );
+}
+
+.graph-star::after {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(200, 225, 255, 0.05) 15%,
+    rgba(200, 225, 255, 0.6) 45%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(200, 225, 255, 0.6) 55%,
+    rgba(200, 225, 255, 0.05) 85%,
+    transparent 100%
+  );
+}
+
+/* --- Stardust float --- */
+@keyframes graphDust {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translate(0, 0);
+  }
+  25% {
+    opacity: 0.7;
+    transform: translate(var(--dust-drift, 10px), -15px);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translate(calc(var(--dust-drift, 10px) * -0.5), -25px);
+  }
+  75% {
+    opacity: 0.6;
+    transform: translate(calc(var(--dust-drift, 10px) * 0.3), -10px);
+  }
+}

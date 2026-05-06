@@ -18,10 +18,14 @@ import { AdminBlogManager } from "./pages/AdminBlogManager";
 import { AdminBlogWriter } from "./pages/AdminBlogWriter";
 import { GuestbookPage } from "./pages/GuestbookPage";
 import { ChatPage } from "./pages/ChatPage";
+import { KnowledgeGraph } from "./pages/KnowledgeGraph";
 import { AdminGuestbook } from "./pages/AdminGuestbook";
 import { AdminGallery } from "./pages/AdminGallery";
 import { AdminFieldManagement } from "./pages/AdminFieldManagement";
 import { AdminAIManagement } from "./pages/AdminAIManagement";
+import { FriendsPage } from "./pages/FriendsPage";
+import { AdminFriendLinks } from "./pages/AdminFriendLinks";
+import { ContributionPage } from "./pages/ContributionPage";
 
 export const router = createBrowserRouter([
   {
@@ -37,7 +41,10 @@ export const router = createBrowserRouter([
       { path: "blog/:id", element: <BlogDetail /> },
       { path: "about", element: <About /> },
       { path: "guestbook", element: <GuestbookPage /> },
+      { path: "friends", element: <FriendsPage /> },
       { path: "chat", element: <ChatPage /> },
+      { path: "graph", element: <KnowledgeGraph /> },
+      { path: "contributions", element: <ContributionPage /> },
       { path: "*", element: <NotFound /> },
     ],
   },
@@ -62,6 +69,7 @@ export const router = createBrowserRouter([
       { path: "pages", element: <AdminPages /> },
       { path: "gallery", element: <AdminGallery /> },
       { path: "guestbook", element: <AdminGuestbook /> },
+      { path: "friend-links", element: <AdminFriendLinks /> },
       { path: "fields", element: <AdminFieldManagement /> },
       { path: "ai", element: <AdminAIManagement /> },
     ],

@@ -43,6 +43,22 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateSelective" parameterType="com.bloger.backend.entity.User">
+        UPDATE user
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="emailVerified != null">email_verified = #{emailVerified},</if>
+            <if test="admin != null">admin = #{admin},</if>
+            <if test="lastLoginTime != null">last_login_time = #{lastLoginTime},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
     <delete id="delete">
         DELETE FROM user WHERE id = #{id}
     </delete>

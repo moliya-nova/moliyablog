@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.FriendLinkMapper">
+    <resultMap id="FriendLinkResult" type="com.bloger.backend.entity.FriendLink">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+        <result column="description" property="description"/>
+        <result column="url" property="url"/>
+        <result column="category" property="category"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="is_alive" property="isAlive"/>
+        <result column="last_check_time" property="lastCheckTime"/>
+        <result column="card_style" property="cardStyle"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="FriendLinkResult">
+        SELECT * FROM friend_link WHERE id = #{id}
+    </select>
+
+    <select id="selectList" resultMap="FriendLinkResult">
+        SELECT * FROM friend_link WHERE status = 1 ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="FriendLinkResult">
+        SELECT * FROM friend_link WHERE status = #{status} ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="FriendLinkResult">
+        SELECT * FROM friend_link ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.bloger.backend.entity.FriendLink" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO friend_link (name, avatar, description, url, category, sort, status, is_alive, last_check_time, card_style)
+        VALUES (#{name}, #{avatar}, #{description}, #{url}, #{category}, #{sort}, #{status}, #{isAlive}, #{lastCheckTime}, #{cardStyle})
+    </insert>
+
+    <update id="update" parameterType="com.bloger.backend.entity.FriendLink">
+        UPDATE friend_link
+        SET name = #{name},
+            avatar = #{avatar},
+            description = #{description},
+            url = #{url},
+            category = #{category},
+            sort = #{sort},
+            status = #{status},
+            card_style = #{cardStyle},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCheckStatus">
+        UPDATE friend_link
+        SET is_alive = #{isAlive},
+            last_check_time = NOW(),
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM friend_link WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM friend_link WHERE status = 1
+    </select>
+</mapper>

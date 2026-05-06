@@ -188,4 +188,23 @@ public class AiManageController {
                     .body(Map.of("code", 502, "msg", "FastAPI 服务异常: " + e.getMessage(), "data", ""));
         }
     }
+
+    /**
+     * 删除单条会话（管理员直接传完整 thread_id）
+     */
+    @DeleteMapping("/thread/{threadId}")
+    public ResponseEntity<Map<String, Object>> deleteThread(@PathVariable String threadId) {
+        try {
+            Map<String, Object> result = configService.deleteThread(threadId);
+            if (result == null) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                        .body(Map.of("code", 502, "msg", "FastAPI 服务无响应", "data", ""));
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("删除会话失败: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("code", 502, "msg", "FastAPI 服务异常: " + e.getMessage(), "data", ""));
+        }
+    }
 }

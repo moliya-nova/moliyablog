@@ -66,4 +66,16 @@ public class AiConfigService {
                 .bodyToMono(Map.class)
                 .block();
     }
+
+    /**
+     * 删除 FastAPI 中的单条会话
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> deleteThread(String threadId) {
+        return webClient.delete()
+                .uri("/chat/thread/{threadId}", threadId)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+    }
 }

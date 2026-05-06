@@ -62,6 +62,27 @@ async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
   }
 }
 
+// RAG 索引通知（fire-and-forget，不阻塞主流程）
+function notifyRagIndex(articleId: number, title: string, content: string) {
+  fetch(`${API_BASE_URL}/ai/rag/index`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(localStorage.getItem('token') && { 'Authorization': `Bearer ${localStorage.getItem('token')}` }),
+    },
+    body: JSON.stringify({ article_id: articleId, title, content }),
+  }).catch(() => {});
+}
+
+function notifyRagDelete(articleId: number) {
+  fetch(`${API_BASE_URL}/ai/rag/index/${articleId}`, {
+    method: 'DELETE',
+    headers: {
+      ...(localStorage.getItem('token') && { 'Authorization': `Bearer ${localStorage.getItem('token')}` }),
+    },
+  }).catch(() => {});
+}
+
 // 文章相关API
 export const articleApi = {
   // 获取文章列表（已发布）
@@ -120,21 +141,34 @@ export const articleApi = {
   },
 
   // 创建文章
-  createArticle: (article: Article) => fetchApi<void>('/articles', {
-    method: 'POST',
-    body: JSON.stringify(article),
-  }),
-  
+  createArticle: async (article: Article): Promise<Article> => {
+    const result = await fetchApi<Article>('/articles', {
+      method: 'POST',
+      body: JSON.stringify(article),
+    });
+    // 异步通知 RAG 索引
+    notifyRagIndex(result.id, result.title || article.title || '', result.content || article.content || '');
+    return result;
+  },
+
   // 更新文章
-  updateArticle: (id: number, article: Article) => fetchApi<void>(`/articles/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(article),
-  }),
-  
+  updateArticle: async (id: number, article: Article): Promise<void> => {
+    await fetchApi<void>(`/articles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(article),
+    });
+    // 异步通知 RAG 索引
+    notifyRagIndex(id, article.title || '', article.content || '');
+  },
+
   // 删除文章
-  deleteArticle: (id: number) => fetchApi<void>(`/articles/${id}`, {
-    method: 'DELETE',
-  }),
+  deleteArticle: async (id: number): Promise<void> => {
+    await fetchApi<void>(`/articles/${id}`, {
+      method: 'DELETE',
+    });
+    // 异步通知 RAG 删除索引
+    notifyRagDelete(id);
+  },
 };
 
 // 分类相关API
@@ -630,7 +664,8 @@ export const chatApi = {
   streamMessage: async (
     message: string,
     onChunk: (data: ChatResponse) => void,
-    threadId: string = "default"
+    threadId: string = "default",
+    userId?: string | number
   ): Promise<void> => {
     const token = localStorage.getItem('token');
     const url = `${API_BASE_URL}/ai/chat`;
@@ -641,7 +676,11 @@ export const chatApi = {
         'Content-Type': 'application/json',
         ...(token && { 'Authorization': `Bearer ${token}` }),
       },
-      body: JSON.stringify({ message, thread_id: threadId }),
+      body: JSON.stringify({
+        message,
+        thread_id: threadId,
+        ...(userId && { user_id: String(userId) }),
+      }),
     });
 
     if (!response.ok) {
@@ -708,6 +747,19 @@ export const chatApi = {
       },
     });
   },
+
+  // 获取指定会话的历史消息
+  getHistory: async (threadId: string): Promise<Array<{role: string; content: string; created_at: number}>> => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/ai/chat/history/${threadId}`, {
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data?.data || [];
+  },
 };
 
 // 关于页面相关API
@@ -773,8 +825,89 @@ export const aiManageApi = {
   // 获取活跃线程列表
   getActiveThreads: () => fetchApi<any>('/ai/threads'),
 
+  // 删除单条会话
+  deleteThread: (threadId: string) => fetchApi<any>(`/ai/thread/${encodeURIComponent(threadId)}`, {
+    method: 'DELETE',
+  }),
+
   // 清除所有记忆
   clearAllMemory: () => fetchApi<any>('/ai/memory', {
+    method: 'DELETE',
+  }),
+
+  // 全量重建 RAG 索引
+  reindex: () => fetchApi<any>('/ai/rag/reindex', {
+    method: 'POST',
+  }),
+};
+
+// 友链相关API
+export const friendLinkApi = {
+  // 获取显示状态的友链（前端）
+  getFriendLinks: () => fetchApi<FriendLink[]>('/friend-links/public'),
+
+  // 获取所有友链（管理端）
+  getFriendLinksAll: () => fetchApi<FriendLink[]>('/friend-links'),
+
+  // 获取友链详情
+  getFriendLinkById: (id: number) => fetchApi<FriendLink>(`/friend-links/${id}`),
+
+  // 获取友链数量
+  getFriendLinkCount: () => fetchApi<number>('/friend-links/count'),
+
+  // 创建友链
+  createFriendLink: (data: FriendLink) => fetchApi<void>('/friend-links', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  // 更新友链
+  updateFriendLink: (id: number, data: FriendLink) => fetchApi<void>(`/friend-links/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+
+  // 删除友链
+  deleteFriendLink: (id: number) => fetchApi<void>(`/friend-links/${id}`, {
+    method: 'DELETE',
+  }),
+
+  // 检测单个友链状态
+  checkFriendLink: (id: number) => fetchApi<{isAlive: boolean}>(`/friend-links/${id}/check`, {
+    method: 'POST',
+  }),
+
+  // 检测所有友链状态
+  checkAllFriendLinks: () => fetchApi<void>('/friend-links/check-all', {
+    method: 'POST',
+  }),
+
+  // 提交友链申请
+  submitApply: (data: FriendLinkApply) => fetchApi<void>('/friend-link-applies', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  // 获取所有申请（管理端）
+  getApplies: () => fetchApi<FriendLinkApply[]>('/friend-link-applies'),
+
+  // 获取待审核申请
+  getPendingApplies: () => fetchApi<FriendLinkApply[]>('/friend-link-applies/pending'),
+
+  // 审核通过
+  approveApply: (id: number, reply?: string) => fetchApi<void>(`/friend-link-applies/${id}/approve`, {
+    method: 'PUT',
+    body: JSON.stringify({ reply }),
+  }),
+
+  // 审核拒绝
+  rejectApply: (id: number, reply?: string) => fetchApi<void>(`/friend-link-applies/${id}/reject`, {
+    method: 'PUT',
+    body: JSON.stringify({ reply }),
+  }),
+
+  // 删除申请
+  deleteApply: (id: number) => fetchApi<void>(`/friend-link-applies/${id}`, {
     method: 'DELETE',
   }),
 };

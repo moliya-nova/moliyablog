@@ -9,7 +9,7 @@ import { AuthGuard } from './AuthGuard';
 import { useAvatarUrl } from '../hooks/useImageUrl';
 import { PageTransition } from './PageTransition';
 
-import { Home, Users, Shield, FileText, Edit3, LogOut, BookOpen, MessageCircle, ImageIcon, Tags, Sparkles } from 'lucide-react';
+import { Home, Users, Shield, FileText, Edit3, LogOut, BookOpen, MessageCircle, ImageIcon, Tags, Sparkles, Link2 } from 'lucide-react';
 
 function AdminAvatar({ src, alt }: { src?: string | null; alt?: string }) {
   const { url } = useAvatarUrl(src);
@@ -47,6 +47,7 @@ export const AdminLayout: React.FC = () => {
     { label: '页面管理', icon: Edit3, path: '/admin/pages' },
     { label: '图库管理', icon: ImageIcon, path: '/admin/gallery' },
     { label: '留言管理', icon: MessageCircle, path: '/admin/guestbook' },
+    { label: '友链管理', icon: Link2, path: '/admin/friend-links' },
     { label: 'AI 管理', icon: Sparkles, path: '/admin/ai' },
   ];
 

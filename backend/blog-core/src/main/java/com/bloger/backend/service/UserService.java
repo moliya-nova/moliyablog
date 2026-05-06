@@ -12,6 +12,7 @@ public interface UserService {
     List<User> list();
     void save(User user);
     void update(User user);
+    void updateSelective(User user);
     void delete(Long id);
     long count();
     List<Map<String, Object>> getRecentActivities();

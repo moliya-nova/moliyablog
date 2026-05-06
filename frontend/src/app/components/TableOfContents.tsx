@@ -1,23 +1,21 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
+import { List } from "lucide-react";
 import type { TocItem } from "../utils/headingId";
 
 interface TableOfContentsProps {
   items: TocItem[];
-  scrollOffset?: number;
+  scrollContainerRef?: React.RefObject<HTMLElement | null>;
 }
 
 const INDENT_CLASSES: Record<number, string> = {
   1: "ml-0",
-  2: "ml-4",
-  3: "ml-8",
-  4: "ml-12",
-  5: "ml-16",
-  6: "ml-20",
+  2: "ml-3",
+  3: "ml-6",
 };
 
-export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsProps) {
+export function TableOfContents({ items, scrollContainerRef }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -25,12 +23,21 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
   const scrollToHeading = useCallback(
     (id: string) => {
       const element = document.getElementById(id);
-      if (element) {
-        const top = element.getBoundingClientRect().top + window.scrollY - scrollOffset;
-        window.scrollTo({ top, behavior: "smooth" });
+      if (!element) return;
+
+      const container = scrollContainerRef?.current;
+      if (container) {
+        // 在自定义滚动容器中滚动
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+        const scrollTop = container.scrollTop + elementRect.top - containerRect.top - 20;
+        container.scrollTo({ top: scrollTop, behavior: "smooth" });
+      } else {
+        // 回退到 window 滚动
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     },
-    [scrollOffset],
+    [scrollContainerRef],
   );
 
   useEffect(() => {
@@ -43,6 +50,7 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
     if (headingElements.length === 0) return;
 
     const intersectingIds = new Set<string>();
+    const container = scrollContainerRef?.current || null;
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -54,7 +62,6 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
           }
         }
 
-        // Active heading is the first intersecting one in document order
         for (const item of items) {
           if (intersectingIds.has(item.id)) {
             setActiveId(item.id);
@@ -63,7 +70,8 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
         }
       },
       {
-        rootMargin: `-${scrollOffset}px 0px -60% 0px`,
+        root: container,
+        rootMargin: "-20px 0px -60% 0px",
         threshold: 0,
       },
     );
@@ -72,14 +80,12 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
       observerRef.current.observe(el);
     }
 
-    // Determine initial active heading
     const detectActive = () => {
-      const viewportTop = scrollOffset;
       for (let i = items.length - 1; i >= 0; i--) {
         const el = document.getElementById(items[i].id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= viewportTop) {
+          if (rect.top <= 100) {
             setActiveId(items[i].id);
             return;
           }
@@ -95,9 +101,8 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
     return () => {
       observerRef.current?.disconnect();
     };
-  }, [items, scrollOffset]);
+  }, [items, scrollContainerRef]);
 
-  // Auto-scroll active item into view within the TOC panel
   useEffect(() => {
     if (!activeId || !navRef.current) return;
     const button = navRef.current.querySelector(`[data-toc-id="${activeId}"]`);
@@ -110,15 +115,19 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
 
   const tocPanel = (
     <motion.div
-      className="fixed right-48 top-24 w-64 max-h-[calc(100vh-8rem)] bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-md flex flex-col hidden lg:flex"
+      className="fixed right-8 top-24 w-60 max-h-[calc(100vh-8rem)] bg-white/70 backdrop-blur-2xl border border-black/[0.06] rounded-2xl shadow-lg shadow-black/[0.04] p-5 flex flex-col hidden lg:flex"
+      style={{ zIndex: 9995 }}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.5 }}
+      transition={{ delay: 0.5, duration: 0.5 }}
     >
-      <h3 className="text-lg font-semibold mb-4">目录</h3>
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200/60">
+        <List className="w-4 h-4 text-gray-400" />
+        <h3 className="text-sm font-semibold text-gray-700 tracking-wide">目录</h3>
+      </div>
       <nav
         ref={navRef}
-        className="space-y-2 overflow-y-auto pr-2 flex-1 scrollbar-hide"
+        className="space-y-1 overflow-y-auto pr-1 flex-1 scrollbar-hide"
         style={{ overscrollBehavior: "contain" }}
       >
         {items.map((item) => {
@@ -133,13 +142,13 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
                 e.stopPropagation();
                 scrollToHeading(item.id);
               }}
-              className={`block text-left py-1 px-2 rounded transition-all duration-200 ${
+              className={`block w-full text-left py-1.5 px-2.5 rounded-lg transition-all duration-200 text-[13px] ${
                 isActive
-                  ? "text-blue-600 font-semibold text-base"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "text-blue-600 font-medium bg-blue-50/80"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50/80"
               } ${INDENT_CLASSES[item.level] ?? "ml-0"}`}
             >
-              {item.text}
+              <span className="line-clamp-2">{item.text}</span>
             </button>
           );
         })}
@@ -149,10 +158,7 @@ export function TableOfContents({ items, scrollOffset = 80 }: TableOfContentsPro
 
   return (
     <>
-      {/* Spacer to reserve layout space so content doesn't shift */}
       <div className="lg:w-64 shrink-0 hidden lg:block" aria-hidden="true" />
-
-      {/* Portal to document.body to escape any ancestor transform (e.g. PageTransition) */}
       {createPortal(tocPanel, document.body)}
     </>
   );

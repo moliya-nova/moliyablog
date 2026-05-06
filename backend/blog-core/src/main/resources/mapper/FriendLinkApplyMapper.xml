@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bloger.backend.mapper.FriendLinkApplyMapper">
+    <resultMap id="FriendLinkApplyResult" type="com.bloger.backend.entity.FriendLinkApply">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+        <result column="description" property="description"/>
+        <result column="url" property="url"/>
+        <result column="email" property="email"/>
+        <result column="reason" property="reason"/>
+        <result column="status" property="status"/>
+        <result column="admin_reply" property="adminReply"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="FriendLinkApplyResult">
+        SELECT * FROM friend_link_apply WHERE id = #{id}
+    </select>
+
+    <select id="selectList" resultMap="FriendLinkApplyResult">
+        SELECT * FROM friend_link_apply ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" resultMap="FriendLinkApplyResult">
+        SELECT * FROM friend_link_apply WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.bloger.backend.entity.FriendLinkApply" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO friend_link_apply (name, avatar, description, url, email, reason, status)
+        VALUES (#{name}, #{avatar}, #{description}, #{url}, #{email}, #{reason}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.bloger.backend.entity.FriendLinkApply">
+        UPDATE friend_link_apply
+        SET name = #{name},
+            avatar = #{avatar},
+            description = #{description},
+            url = #{url},
+            email = #{email},
+            reason = #{reason},
+            status = #{status},
+            admin_reply = #{adminReply},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM friend_link_apply WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM friend_link_apply
+    </select>
+</mapper>

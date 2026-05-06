@@ -161,12 +161,44 @@ export interface AboutPageData {
   }[];
 }
 
+// 友链接口
+export interface FriendLink {
+  id: number;
+  name: string;
+  avatar: string;
+  description: string;
+  url: string;
+  category: string;
+  sort: number;
+  status: number;
+  isAlive: number;
+  lastCheckTime: string;
+  cardStyle: string;
+  createTime: string;
+  updateTime: string;
+}
+
+// 友链申请接口
+export interface FriendLinkApply {
+  id: number;
+  name: string;
+  avatar: string;
+  description: string;
+  url: string;
+  email: string;
+  reason: string;
+  status: number;
+  adminReply: string;
+  createTime: string;
+  updateTime: string;
+}
+
 // AI 聊天类型
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: number;
+  timestamp?: number;
 }
 
 export interface ChatResponse {

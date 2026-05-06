@@ -65,25 +65,10 @@ public class ArticleController {
     }
 
     @PostMapping
-    public void save(@RequestBody Article article) {
-        System.out.println("=== ArticleController.save() 被调用 ===");
-        System.out.println("接收到的 Article 数据:");
-        System.out.println("  title: " + article.getTitle());
-        System.out.println("  excerpt: " + article.getExcerpt());
-        System.out.println("  content: " + (article.getContent() != null ? article.getContent().substring(0, Math.min(50, article.getContent().length())) + "..." : "null"));
-        System.out.println("  authorId: " + article.getAuthorId());
-        System.out.println("  categoryId: " + article.getCategoryId());
-        System.out.println("  imageUrl: " + article.getImageUrl());
-        System.out.println("  status: " + article.getStatus());
-        System.out.println("  tags: " + (article.getTags() != null ? article.getTags().size() + " 个标签" : "null"));
-        if (article.getTags() != null) {
-            for (int i = 0; i < article.getTags().size(); i++) {
-                var tag = article.getTags().get(i);
-                System.out.println("    Tag[" + i + "]: id=" + tag.getId() + ", name=" + tag.getName());
-            }
-        }
+    public Article save(@RequestBody Article article) {
         imagePathValidator.validateImagePath(article.getImageUrl());
         articleService.save(article);
+        return article;
     }
 
     @PutMapping("/{id}")

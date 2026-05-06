@@ -46,6 +46,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateSelective(User user) {
+        userMapper.updateSelective(user);
+    }
+
+    @Override
     public void delete(Long id) {
         userMapper.delete(id);
     }

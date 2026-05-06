@@ -12,6 +12,7 @@ public interface UserMapper {
     List<User> selectList();
     int insert(User user);
     int update(User user);
+    int updateSelective(User user);
     int delete(Long id);
     long count();
     List<Map<String, Object>> getRecentActivities();

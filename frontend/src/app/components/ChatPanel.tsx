@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Bot, User, Loader2, Copy, Check, Sparkles, RotateCcw } from "lucide-react";
+import { Send, Bot, User, Loader2, Copy, Check, Sparkles, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
-import { chatApi } from "../services/api";
-
-export type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp?: number;
-};
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import { chatApi, aboutPageApi } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
+import { getImageUrl } from "../utils/imagePath";
+import type { ChatMessage } from "../types";
 
 const WELCOME_CHIPS = [
   "你好，介绍一下自己",
@@ -21,11 +20,11 @@ interface ChatSession {
   messages: ChatMessage[];
 }
 
-const SESSION_KEY = "chat_session";
+const DEFAULT_SESSION_KEY = "chat_session";
 
-function loadSession(): ChatSession {
+function loadSession(sessionKey: string): ChatSession {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(sessionKey);
     if (raw) {
       const session = JSON.parse(raw) as ChatSession;
       if (session.threadId && Array.isArray(session.messages)) {
@@ -39,27 +38,76 @@ function loadSession(): ChatSession {
     threadId: crypto.randomUUID(),
     messages: [],
   };
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+  localStorage.setItem(sessionKey, JSON.stringify(newSession));
   return newSession;
 }
 
-function saveSession(session: ChatSession) {
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-}
+export function ChatPanel({ className, onDragStart, onClose }: { className?: string; onDragStart?: (e: React.MouseEvent) => void; onClose?: () => void }) {
+  const { user } = useAuth();
+  const sessionKey = user?.id ? `chat_session_user_${user.id}` : DEFAULT_SESSION_KEY;
 
-export function ChatPanel({ className }: { className?: string }) {
-  const [session, setSession] = useState<ChatSession>(loadSession);
+  const [session, setSession] = useState<ChatSession>(() => loadSession(sessionKey));
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const messages = session.messages;
   const threadId = session.threadId;
+  const prevSessionKeyRef = useRef(sessionKey);
+
+  // 用户身份变化时（登录/登出），切换到对应会话
+  useEffect(() => {
+    if (prevSessionKeyRef.current !== sessionKey) {
+      prevSessionKeyRef.current = sessionKey;
+      setSession(loadSession(sessionKey));
+    }
+  }, [sessionKey]);
+
+  // 加载头像
+  useEffect(() => {
+    let cancelled = false;
+    aboutPageApi.getAboutPage().then((res) => {
+      if (cancelled) return;
+      const profile = typeof res?.profile === 'string' ? JSON.parse(res.profile) : res?.profile;
+      if (profile?.avatar) {
+        getImageUrl(profile.avatar).then((url) => {
+          if (!cancelled) setAvatarUrl(url);
+        });
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  // 挂载时从后端加载历史消息（本地无消息时）
+  useEffect(() => {
+    if (session.messages.length > 0 || !threadId) return;
+    let cancelled = false;
+    chatApi.getHistory(threadId).then((history) => {
+      if (cancelled || !history || history.length === 0) return;
+      const loaded: ChatMessage[] = history.map((h, i) => ({
+        id: `history_${i}`,
+        role: h.role as "user" | "assistant",
+        content: h.content,
+      }));
+      setSession((prev) => {
+        if (prev.messages.length > 0) return prev; // 已有消息，不覆盖
+        const updated = { ...prev, messages: loaded };
+        localStorage.setItem(sessionKey, JSON.stringify(updated));
+        return updated;
+      });
+    }).catch(() => { /* 静默失败 */ });
+    return () => { cancelled = true; };
+  }, [threadId, sessionKey]);
+
+  const saveSession = useCallback((s: ChatSession) => {
+    localStorage.setItem(sessionKey, JSON.stringify(s));
+  }, [sessionKey]);
 
   const setMessages = useCallback((updater: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
     setSession((prev) => {
       const newMessages = typeof updater === "function" ? updater(prev.messages) : updater;
       const newSession = { ...prev, messages: newMessages };
-      saveSession(newSession);
+      localStorage.setItem(sessionKey, JSON.stringify(newSession));
       return newSession;
     });
-  }, []);
+  }, [sessionKey]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -153,10 +201,16 @@ export function ChatPanel({ className }: { className?: string }) {
             startTypewriter();
           }
           bufferRef.current += data.data;
-        } else if (data.code !== 200) {
-          toast.error(data.msg || "AI 服务异常");
+        } else if (data.code !== 200 && data.msg) {
+          if (!assistantCreated) {
+            assistantCreated = true;
+            setMessages((prev) => [
+              ...prev,
+              { id: assistantId, role: "assistant", content: data.msg },
+            ]);
+          }
         }
-      }, threadId);
+      }, threadId, user?.id);
     } catch {
       toast.error("AI 服务异常，请稍后重试");
     } finally {
@@ -177,9 +231,13 @@ export function ChatPanel({ className }: { className?: string }) {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
     if (loading) return;
-    chatApi.deleteMemory(threadId);
+    try {
+      await chatApi.deleteMemory(threadId);
+    } catch {
+      // 静默处理，不阻塞新对话创建
+    }
     const newSession: ChatSession = {
       threadId: crypto.randomUUID(),
       messages: [],
@@ -194,12 +252,23 @@ export function ChatPanel({ className }: { className?: string }) {
     <div className={`bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col overflow-hidden ${className ?? ""}`}>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-white flex-shrink-0">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center">
-          <Bot className="w-4 h-4 text-white" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-base font-semibold text-gray-800 leading-tight">超级马小凯</h2>
-          <p className="text-xs text-gray-400">AI 助手 · 在线</p>
+        <div
+          className="flex items-center gap-3 flex-1 cursor-grab active:cursor-grabbing min-w-0"
+          onMouseDown={onDragStart}
+        >
+          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#5cbf9f]/30 flex-shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-gray-800 leading-tight">超级马小凯</h2>
+            <p className="text-xs text-gray-400">AI 助手 · 在线</p>
+          </div>
         </div>
         <button
           onClick={handleNewChat}
@@ -210,14 +279,29 @@ export function ChatPanel({ className }: { className?: string }) {
           <RotateCcw className="w-3.5 h-3.5" />
           <span>新对话</span>
         </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+            title="关闭"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto chat-scrollbar min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center mb-4 shadow-lg shadow-[#5cbf9f]/20">
-              <Sparkles className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden mb-4 shadow-lg shadow-[#5cbf9f]/20 border-2 border-[#5cbf9f]/20">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-white" />
+                </div>
+              )}
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-1">你好，我是马小凯</h3>
             <p className="text-sm text-gray-400 mb-6 max-w-xs">
@@ -245,8 +329,14 @@ export function ChatPanel({ className }: { className?: string }) {
                 }`}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Bot className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#5cbf9f]/20 flex-shrink-0 mt-0.5">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -256,8 +346,41 @@ export function ChatPanel({ className }: { className?: string }) {
                   </div>
                 ) : (
                   <div className="max-w-[80%] group">
-                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {msg.content}
+                    <div className="text-sm text-gray-700 leading-relaxed chat-markdown">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeHighlight]}
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                          code: ({ className, children, ...props }) => {
+                            const match = /language-(\w+)/.exec(className || "");
+                            if (!match) {
+                              return <code className="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono text-pink-600">{children}</code>;
+                            }
+                            return <code className={className} {...props}>{children}</code>;
+                          },
+                          pre: ({ children }) => (
+                            <pre className="mb-2 p-3 bg-gray-900 text-gray-100 rounded-lg overflow-x-auto text-xs">{children}</pre>
+                          ),
+                          a: ({ href, children }) => (
+                            <a href={href} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
+                          ),
+                          blockquote: ({ children }) => (
+                            <blockquote className="border-l-3 border-[#5cbf9f] pl-3 mb-2 italic text-gray-600">{children}</blockquote>
+                          ),
+                          table: ({ children }) => (
+                            <div className="mb-2 overflow-x-auto"><table className="min-w-full divide-y divide-gray-200 border text-xs">{children}</table></div>
+                          ),
+                          th: ({ children }) => <th className="px-2 py-1 text-left font-semibold">{children}</th>,
+                          td: ({ children }) => <td className="px-2 py-1">{children}</td>,
+                          hr: () => <hr className="my-2 border-gray-200" />,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
                       {isTyping && msg.id === assistantIdRef.current && (
                         <span className="typing-cursor" />
                       )}
@@ -288,8 +411,14 @@ export function ChatPanel({ className }: { className?: string }) {
 
             {loading && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
               <div className="flex gap-3 chat-message-enter">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#5cbf9f]/20 flex-shrink-0">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#5c9fbf] to-[#5cbf9f] flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5 pt-1.5">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />

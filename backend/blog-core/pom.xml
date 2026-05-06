@@ -72,22 +72,7 @@
             <groupId>com.qcloud</groupId>
             <artifactId>cos_api</artifactId>
         </dependency>
-
-        <!-- blog-ai 模块 -->
-        <dependency>
-            <groupId>com.bloger</groupId>
-            <artifactId>blog-ai</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

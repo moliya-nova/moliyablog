@@ -22,6 +22,7 @@ export function Header() {
     { name: "首页", path: "/home" },
     { name: "博客", path: "/home/blog" },
     { name: "关于", path: "/home/about" },
+    { name: "友链", path: "/home/friends" },
     { name: "AI", path: "/home/chat" }
   ];
 

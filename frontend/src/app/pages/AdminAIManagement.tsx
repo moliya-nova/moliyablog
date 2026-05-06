@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Zap,
   MessageSquare,
+  Database,
 } from 'lucide-react';
 
 interface AiStatus {
@@ -38,6 +39,7 @@ interface AiConfig {
 
 interface ActiveThread {
   thread_id: string;
+  username: string;
   last_access: number;
   expires_in: number;
 }
@@ -56,6 +58,10 @@ export function AdminAIManagement() {
   const [editSystemPrompt, setEditSystemPrompt] = useState('');
   const [editMaxConcurrency, setEditMaxConcurrency] = useState(5);
   const [saving, setSaving] = useState(false);
+
+  // RAG 索引状态
+  const [reindexing, setReindexing] = useState(false);
+  const [reindexResult, setReindexResult] = useState<{ total: number; indexed: number; skipped: number; errors: number } | null>(null);
 
   // ========== 数据加载 ==========
   const fetchAll = async () => {
@@ -158,6 +164,34 @@ export function AdminAIManagement() {
     }
   };
 
+  const handleDeleteThread = async (threadId: string) => {
+    try {
+      await aiManageApi.deleteThread(threadId);
+      toast.success('会话已删除');
+      fetchThreads();
+    } catch {
+      toast.error('删除会话失败');
+    }
+  };
+
+  const handleReindex = async () => {
+    setReindexing(true);
+    setReindexResult(null);
+    try {
+      const res = await aiManageApi.reindex();
+      if (res?.data) {
+        setReindexResult(res.data);
+        toast.success(`索引完成：共 ${res.data.total} 篇，新增 ${res.data.indexed} 篇，跳过 ${res.data.skipped} 篇`);
+      } else {
+        toast.error(res?.msg || '重建索引失败');
+      }
+    } catch {
+      toast.error('重建索引失败，请检查 FastAPI 服务是否运行');
+    } finally {
+      setReindexing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -168,11 +202,6 @@ export function AdminAIManagement() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">AI 管理</h1>
-        <p className="text-muted-foreground mt-1">管理 AI 智能体的状态、并发、配置和会话</p>
-      </div>
-
       {/* 状态卡片 + 并发卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 服务状态 */}
@@ -267,6 +296,62 @@ export function AdminAIManagement() {
               <div className="text-xs text-muted-foreground">活跃会话</div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* RAG 知识库 */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Database className="w-4 h-4" />
+              RAG 知识库
+            </CardTitle>
+            <CardDescription>将博客文章全量切片存入向量库，供 AI 检索引用</CardDescription>
+          </div>
+          <Button
+            onClick={handleReindex}
+            disabled={reindexing}
+            size="sm"
+          >
+            {reindexing ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 mr-1 animate-spin" />
+                索引中...
+              </>
+            ) : (
+              <>
+                <Database className="w-3.5 h-3.5 mr-1" />
+                全量重建索引
+              </>
+            )}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {reindexResult ? (
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-slate-50 rounded-lg">
+                <div className="text-xl font-bold">{reindexResult.total}</div>
+                <div className="text-xs text-muted-foreground">文章总数</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-xl font-bold text-green-600">{reindexResult.indexed}</div>
+                <div className="text-xs text-muted-foreground">已索引</div>
+              </div>
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-xl font-bold text-blue-600">{reindexResult.skipped}</div>
+                <div className="text-xs text-muted-foreground">跳过(未变化)</div>
+              </div>
+              <div className="text-center p-3 bg-red-50 rounded-lg">
+                <div className="text-xl font-bold text-red-600">{reindexResult.errors}</div>
+                <div className="text-xs text-muted-foreground">失败</div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-2">
+              点击「全量重建索引」将所有博客文章切片存入向量库，AI 回答时可检索引用
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -365,15 +450,30 @@ export function AdminAIManagement() {
                   key={thread.thread_id}
                   className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                 >
-                  <div>
-                    <span className="font-mono text-sm">{thread.thread_id}</span>
-                    <span className="text-xs text-muted-foreground ml-3">
-                      剩余 {Math.round(thread.expires_in)}秒
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">
+                        {thread.username || '未知用户'}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        活跃
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        剩余 {Math.round(thread.expires_in)}秒
+                      </span>
+                    </div>
+                    <span className="font-mono text-xs text-muted-foreground truncate block mt-1">
+                      {thread.thread_id}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    活跃
-                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-3 flex-shrink-0"
+                    onClick={() => handleDeleteThread(thread.thread_id)}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
                 </div>
               ))}
             </div>

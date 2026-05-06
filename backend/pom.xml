@@ -19,6 +19,7 @@
     <modules>
         <module>blog-core</module>
         <module>blog-ai</module>
+        <module>blog-app</module>
     </modules>
 
     <properties>

@@ -9,18 +9,16 @@ export function Layout() {
 
   return (
     <ChatFloatProvider>
-      <div className="relative min-h-screen">
+      <div className="relative min-h-screen flex">
         <Background />
-        <div className="min-h-screen flex flex-col">
-          <Sidebar />
-          <main className="flex-1 pl-16 overflow-y-auto">
-            <div key={location.pathname} className="relative">
-              <PageTransition>
-                <Outlet />
-              </PageTransition>
-            </div>
-          </main>
-        </div>
+        <Sidebar />
+        <main className="flex-1 ml-16 overflow-y-auto min-h-screen">
+          <div key={location.pathname} className="relative">
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
+          </div>
+        </main>
       </div>
     </ChatFloatProvider>
   );

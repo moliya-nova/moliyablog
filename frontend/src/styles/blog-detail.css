@@ -1,0 +1,52 @@
+/* ========================================
+   Blog Detail Page — Sidebar Override
+   ======================================== */
+
+/* Sidebar z-index when blog detail page is active */
+body[data-blogdetail-theme] aside {
+  z-index: 9996 !important;
+}
+
+/* Light theme sidebar buttons */
+body[data-blogdetail-theme="light"] aside a,
+body[data-blogdetail-theme="light"] aside button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body[data-blogdetail-theme="light"] aside a:hover,
+body[data-blogdetail-theme="light"] aside button:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Active state for blog detail page — light theme */
+body[data-blogdetail-theme="light"] aside a[href="/home/blog"] {
+  background: white !important;
+  color: #1f2937 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark theme sidebar buttons */
+body[data-blogdetail-theme="dark"] aside a,
+body[data-blogdetail-theme="dark"] aside button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body[data-blogdetail-theme="dark"] aside a:hover,
+body[data-blogdetail-theme="dark"] aside button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Active state for blog detail page — dark theme */
+body[data-blogdetail-theme="dark"] aside a[href="/home/blog"] {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: #3b82f6 !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.15);
+}

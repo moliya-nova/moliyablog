@@ -39,6 +39,8 @@ public class SecurityConfig {
             .requestMatchers("/api/site-settings/**").permitAll()
             .requestMatchers("/api/about-page/**").permitAll()
             .requestMatchers("/api/files/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/friend-links/public").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/friend-link-applies").permitAll()
             .anyRequest().authenticated()
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

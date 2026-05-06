@@ -1,0 +1,52 @@
+/* ========================================
+   Contribution Page — Theme-Aware Styles
+   ======================================== */
+
+/* --- Sidebar override when contribution page is active --- */
+body[data-contribution-theme] aside {
+  z-index: 9996 !important;
+}
+
+/* Light theme sidebar buttons */
+body[data-contribution-theme="light"] aside a,
+body[data-contribution-theme="light"] aside button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body[data-contribution-theme="light"] aside a:hover,
+body[data-contribution-theme="light"] aside button:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Active state for contribution page — light theme */
+body[data-contribution-theme="light"] aside a[href="/home/contributions"] {
+  background: white !important;
+  color: #1f2937 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark theme sidebar buttons */
+body[data-contribution-theme="dark"] aside a,
+body[data-contribution-theme="dark"] aside button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body[data-contribution-theme="dark"] aside a:hover,
+body[data-contribution-theme="dark"] aside button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Active state for contribution page — dark theme */
+body[data-contribution-theme="dark"] aside a[href="/home/contributions"] {
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #10b981 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.15);
+}
